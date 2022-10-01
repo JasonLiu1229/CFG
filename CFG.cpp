@@ -1,7 +1,3 @@
-//
-// Created by liuja on 01/10/2022.
-//
-
 #include "CFG.h"
 #include <set>
 
