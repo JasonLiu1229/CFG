@@ -22,7 +22,7 @@ public:
 
     Components(string name, bool tv = true);
 
-    Components(string name, bool tv = true, const vector<vector<Components *>> &rules);
+    Components(string name, bool tv, const vector<vector<Components *>> &rules);
 
     //==== Getters and Setters ====//
     const string &getName() const;
@@ -39,6 +39,8 @@ public:
 
     //==== Functions ====//
     void addRule(const vector<Components*> &rule);
+
+    void printProd();
 
     //==== Destructors ====//
     virtual ~Components();

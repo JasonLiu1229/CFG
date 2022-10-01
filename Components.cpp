@@ -5,6 +5,7 @@
 #include "Components.h"
 
 #include <utility>
+#include <iostream>
 
 Components::Components() {}
 
@@ -39,6 +40,19 @@ void Components::setRule(const vector<vector<Components *>> &rule) {
 
 void Components::addRule(const vector<Components *> &rule) {
     rules.push_back(rule);
+}
+
+void Components::printProd() {
+    for (const auto& item : rules){
+        cout << '\t' << name << " -> '";
+        for (int i = 0; i < item.size(); ++i) {
+            cout << item[i]->name;
+            if (i != item.size()-1){
+                 cout << " ";
+            }
+        }
+        cout << "'"<< endl << endl;
+    }
 }
 
 Components::~Components() {
