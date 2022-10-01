@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.23)
+project(CFG)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(.)
+
+set(CFG_lib
+        CFG.cpp
+        CFG.h
+        Components.cpp
+        Components.h
+        )
+
+add_executable(CFG_testFile1
+        CFG_testfile.cpp
+        ${CFG_lib}
+        )
