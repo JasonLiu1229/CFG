@@ -1,4 +1,5 @@
 #include "CFG.h"
+#include "Components.h"
 #include <set>
 
 CFG::CFG() {
@@ -66,10 +67,10 @@ void CFG::print() {
                 cout << ", ";
             }
         }
-        cout << "}" << endl;
+        cout << "}";
     }
     else {
-        cout << "}" << endl;
+        cout << "}";
     }
 
     cout << endl;
@@ -92,8 +93,6 @@ void CFG::print() {
         cout << "}" << endl;
     }
 
-    cout << endl;
-
     // productions
     cout << "P = {";
 
@@ -101,7 +100,7 @@ void CFG::print() {
         cout << "}";
     }
     else {
-        cout << endl << endl;
+        cout << endl;
 
         vector<Components *> variablesC;
 
@@ -120,7 +119,7 @@ void CFG::print() {
         cout << "}";
     }
 
-    cout << endl << endl;
+    cout << endl;
 
     // starter
 

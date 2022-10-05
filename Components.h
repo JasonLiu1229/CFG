@@ -42,6 +42,10 @@ public:
 
     void printProd();
 
+    void sortProd();
+
+    //==== Operator overload ====//
+
     //==== Destructors ====//
     virtual ~Components();
 };

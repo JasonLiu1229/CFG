@@ -5,7 +5,8 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include "Components.h"
+
+class Components;
 
 using namespace std;
 

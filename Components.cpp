@@ -44,17 +44,18 @@ void Components::addRule(const vector<Components *> &rule) {
 
 void Components::printProd() {
     for (const auto& item : rules){
-        cout << '\t' << name << " -> '";
+        cout << "    " << name << " -> `";
         for (int i = 0; i < item.size(); ++i) {
             cout << item[i]->name;
             if (i != item.size()-1){
                  cout << " ";
             }
         }
-        cout << "'"<< endl << endl;
+        cout << "`"<< endl;
     }
 }
 
 Components::~Components() {
 
 }
+
