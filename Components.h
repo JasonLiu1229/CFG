@@ -40,6 +40,8 @@ public:
     //==== Functions ====//
     void addRule(const vector<Components*> &rule);
 
+    void addRuleSort(const vector<Components*> &rule);
+
     void printProd();
 
     void sortProd();

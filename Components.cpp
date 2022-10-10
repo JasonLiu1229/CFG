@@ -6,6 +6,7 @@
 
 #include <utility>
 #include <iostream>
+#include <algorithm>
 
 Components::Components() {}
 
@@ -39,7 +40,17 @@ void Components::setRule(const vector<vector<Components *>> &rule) {
 }
 
 void Components::addRule(const vector<Components *> &rule) {
+    if (rule.empty()){
+        rules.insert(rules.begin(), rule);
+    }
+    else {
+        rules.push_back(rule);
+    }
+}
+
+void Components::addRuleSort(const vector<Components *> &rule) {
     rules.push_back(rule);
+    sort(rules.begin(), rules.end());
 }
 
 void Components::printProd() {
@@ -59,10 +70,10 @@ bool Components::operator==(const string &cName) const{
     return cName == name;
 }
 
+
 bool Components::operator!=(const string &cName) const {
     return !(cName == name);
 }
-
 
 Components::~Components() {
 

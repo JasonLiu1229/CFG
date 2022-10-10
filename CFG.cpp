@@ -4,6 +4,7 @@
 
 #include <set>
 #include <fstream>
+#include <algorithm>
 #include <iomanip>
 
 using json = nlohmann::json;
@@ -72,9 +73,10 @@ CFG::CFG(const string& fileName) {
         for (const auto& i : item["body"]){
             productionRule.push_back(accVarTer[i]);
         }
-        accVarTer[item["head"]]->addRule(productionRule);
+        accVarTer[item["head"]]->addRuleSort(productionRule);
     }
-    vector<Components*> start = {accVarTer[j["start"]]};
+    vector<Components*> start = {accVarTer[j["Start"]]};
+    starter = start;
 }
 
 void CFG::print() {
