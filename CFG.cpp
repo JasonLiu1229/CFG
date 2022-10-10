@@ -1,6 +1,12 @@
 #include "CFG.h"
 #include "Components.h"
+#include "json.hpp"
+
 #include <set>
+#include <fstream>
+#include <iomanip>
+
+using json = nlohmann::json;
 
 CFG::CFG() {
     // Variables
@@ -40,28 +46,59 @@ CFG::CFG() {
     starter = {S};
 }
 
+CFG::CFG(const string& fileName) {
+    // inlezen uit file
+    ifstream input(fileName);
+
+    json j;
+    input >> j;
+
+    for (const auto& i : j["Variables"]){
+        auto* com = new Components(i, false);
+        accVarTer[i] = com;
+        varTer.push_back(com);
+        variables.push_back(com);
+    }
+
+    for (const auto& i : j["Terminals"]){
+        auto* com = new Components(i);
+        accVarTer[i] = com;
+        varTer.push_back(com);
+        terminals.push_back(com);
+    }
+
+    for (auto item : j["Productions"]){
+        vector<Components*> productionRule;
+        for (const auto& i : item["body"]){
+            productionRule.push_back(accVarTer[i]);
+        }
+        accVarTer[item["head"]]->addRule(productionRule);
+    }
+    vector<Components*> start = {accVarTer[j["start"]]};
+}
+
 void CFG::print() {
-    // sort variables and terminals
-    set<string> variables;
-    set<string> terminals;
+    // sort variablesS and terminalsS
+    set<string> variablesS;
+    set<string> terminalsS;
 
     for (auto item : varTer) {
         if (item->isTv()){
-            terminals.insert(item->getName());
+            terminalsS.insert(item->getName());
         }
         else {
-            variables.insert(item->getName());
+            variablesS.insert(item->getName());
         }
     }
 
     // print
     cout << "V = {";
 
-    if (!variables.empty()) {
-        auto item2 = variables.end();
+    if (!variablesS.empty()) {
+        auto item2 = variablesS.end();
         item2--;
 
-        for (const auto& item: variables) {
+        for (const auto& item: variablesS) {
             cout << item;
             if (item != *item2) {
                 cout << ", ";
@@ -77,11 +114,11 @@ void CFG::print() {
 
     cout << "T = {";
 
-    if (!variables.empty()) {
-        auto item2 = terminals.end();
+    if (!variablesS.empty()) {
+        auto item2 = terminalsS.end();
         item2--;
 
-        for (const auto& item: terminals) {
+        for (const auto& item: terminalsS) {
             cout << item;
             if (item != *item2) {
                 cout << ", ";
@@ -96,7 +133,7 @@ void CFG::print() {
     // productions
     cout << "P = {";
 
-    if (variables.empty()){
+    if (variablesS.empty()){
         cout << "}";
     }
     else {
@@ -104,7 +141,7 @@ void CFG::print() {
 
         vector<Components *> variablesC;
 
-        for (const auto &item: variables) {
+        for (const auto &item: variablesS) {
             for (auto item2: varTer) {
                 if (item2->getName() == item) {
                     variablesC.push_back(item2);

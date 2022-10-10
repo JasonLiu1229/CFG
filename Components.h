@@ -45,6 +45,9 @@ public:
     void sortProd();
 
     //==== Operator overload ====//
+    bool operator==(const string &cName) const;
+
+    bool operator!=(const string &cName) const;
 
     //==== Destructors ====//
     virtual ~Components();

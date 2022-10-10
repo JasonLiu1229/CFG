@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 #include <string>
 #include <sstream>
 
@@ -14,6 +15,9 @@ class CFG {
     //==== Main Components ====//
     vector<Components*> starter;            // Start symbol
     vector<Components*> varTer;             // Variables or Terminals
+    vector<Components*> variables;          // Variables
+    vector<Components*> terminals;          // Terminals
+    map<string , Components*> accVarTer;    // accessible var and ter
     string yield;                           // end result
 
     //==== Secondary Components ====//
@@ -21,6 +25,8 @@ class CFG {
 public:
     //==== Constructors ====//
     CFG();
+
+    CFG(const string& fileName);
 
     //==== Functions ====//
     void print();

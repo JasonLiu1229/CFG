@@ -16,3 +16,8 @@ add_executable(CFG_testFile1
         CFG_testfile.cpp
         ${CFG_lib}
         )
+
+add_executable(CFG_testfile2
+        CFG_testfile2.cpp
+        ${CFG_lib}
+        )

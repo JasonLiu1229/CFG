@@ -55,7 +55,17 @@ void Components::printProd() {
     }
 }
 
+bool Components::operator==(const string &cName) const{
+    return cName == name;
+}
+
+bool Components::operator!=(const string &cName) const {
+    return !(cName == name);
+}
+
+
 Components::~Components() {
 
 }
+
 
