@@ -31,6 +31,19 @@ public:
     //==== Functions ====//
     void print();
 
+    //bool epsilonExist();
+
+    vector<Components*> epsilonVariables();
+
+    vector<Components*> nullVariables();
+
+    bool findIntersection(const vector<Components*>& set1, const vector<Components*>& set2);
+
+    bool isNull(Components* comp);
+
+    //==== Conversion ====//
+    void toCNF();
+
     //==== Destructor ====//
     virtual ~CFG();
 };

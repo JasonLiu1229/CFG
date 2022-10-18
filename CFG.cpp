@@ -1,4 +1,5 @@
 #include "CFG.h"
+#include "Tree.h"
 #include "Components.h"
 #include "json.hpp"
 
@@ -168,6 +169,109 @@ void CFG::print() {
         cout << item->getName() << " ";
     }
     cout << endl;
+}
+
+/*bool CFG::epsilonExist() {      // true: if there is an epsilon production
+    for (auto i : variables) {
+        for (auto j : i->getRule()){
+            if (j.empty()){
+                return true;
+            }
+        }
+    }
+    return false;
+}*/
+
+vector<Components *> CFG::epsilonVariables() {
+    vector<Components*> epsilonVariables;
+
+    for (auto i : variables) {
+        for (const auto &j: i->getRule()) {
+            if (j.empty()) {
+                epsilonVariables.push_back(i);
+                break;
+            }
+        }
+
+    }
+    return epsilonVariables;
+}
+
+vector<Components *> CFG::nullVariables() {
+    vector<Components*> nullVars;
+    for (auto item1 : variables){
+        if (isNull(item1)){
+            nullVars.push_back(item1);
+        }
+    }
+    return nullVars;
+}
+
+bool CFG::findIntersection(const vector<Components*>& set1, const vector<Components*>& set2) {
+    vector<Components*> set3;
+    set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), back_inserter(set3));
+    return !set3.empty();
+}
+
+bool CFG::isNull(Components* comp) {
+    for (const auto& item1 : comp->getRule()){
+        if (item1.empty()){
+            return true;
+        }
+        else {
+            for (auto item2 : item1){
+                return isNull(item2);
+            }
+        }
+    }
+    return false;
+}
+
+void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
+    // original
+    cout << "Original CFG:" << endl << endl;
+
+    print();
+
+    cout << endl;
+
+    // eliminate epsilon
+    vector<Components*> nullVars = nullVariables();
+    vector<Components*> epsVars = epsilonVariables();
+
+    for (auto i : variables){
+        vector<vector<Components*>> allProds;
+        for (auto  j : i->getRule()){
+            vector<vector<Components*>> prods;
+            if (!j.empty()){
+                Tree tree(j, nullVars, epsVars);
+                prods = tree.getLeaves();
+            }
+            if (findIntersection({i}, epsVars)){
+                allProds.insert(allProds.end(), prods.begin(), prods.end());
+                allProds.erase(unique(allProds.begin(), allProds.end()), allProds.end());
+            }
+        }
+        if (!allProds.empty()){
+            i->setRule(allProds);
+            i->cleanUp();
+        }
+    }
+
+    print();
+
+    // eliminate unit pairs
+
+
+    // eliminate useless symbols
+
+
+    // replacing terminals wit bad bodies
+
+
+    // breaking apart bodies, adding new variables
+
+
 }
 
 CFG::~CFG() {

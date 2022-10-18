@@ -10,6 +10,8 @@ set(CFG_lib
         CFG.h
         Components.cpp
         Components.h
+        Tree.cpp
+        Tree.h
         )
 
 add_executable(CFG_testFile1
@@ -19,5 +21,10 @@ add_executable(CFG_testFile1
 
 add_executable(CFG_testfile2
         CFG_testfile2.cpp
+        ${CFG_lib}
+        )
+
+add_executable(CNF_testfile
+        CNF_testfile.cpp
         ${CFG_lib}
         )

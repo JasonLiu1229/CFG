@@ -48,10 +48,20 @@ void Components::addRule(const vector<Components *> &rule) {
     }
 }
 
+void Components::addRules(const vector<vector<Components *>> &newRules) {
+    set_union(newRules.begin(), newRules.end(), rules.begin(), rules.end(), back_inserter(rules));
+    /*cleanUp();*/
+}
+
+void Components::cleanUp() {
+    sort(rules.begin(), rules.end());
+}
+
 void Components::addRuleSort(const vector<Components *> &rule) {
     rules.push_back(rule);
     sort(rules.begin(), rules.end());
 }
+
 
 void Components::printProd() {
     for (const auto& item : rules){
@@ -66,10 +76,18 @@ void Components::printProd() {
     }
 }
 
+void Components::deleteEpsilonProd() {
+    for (int i = 0; i < rules.size(); ++i) {
+        if(rules[i].empty()){
+            rules.erase(rules.begin()+i);
+            break;
+        }
+    }
+}
+
 bool Components::operator==(const string &cName) const{
     return cName == name;
 }
-
 
 bool Components::operator!=(const string &cName) const {
     return !(cName == name);
@@ -77,6 +95,15 @@ bool Components::operator!=(const string &cName) const {
 
 Components::~Components() {
 
+}
+
+bool Components::inVector(vector<vector<Components*>> comps, vector<Components*> comp) {
+    for (auto i : comps){
+        if (i == comp){
+            return true;
+        }
+    }
+    return false;
 }
 
 

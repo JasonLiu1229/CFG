@@ -40,11 +40,17 @@ public:
     //==== Functions ====//
     void addRule(const vector<Components*> &rule);
 
+    void addRules(const vector<vector<Components*>> &newRules);
+
     void addRuleSort(const vector<Components*> &rule);
+
+    void cleanUp();
 
     void printProd();
 
     void sortProd();
+
+    void deleteEpsilonProd();
 
     //==== Operator overload ====//
     bool operator==(const string &cName) const;
@@ -53,6 +59,9 @@ public:
 
     //==== Destructors ====//
     virtual ~Components();
+
+private:
+    bool inVector(vector<vector<Components*>> comps, vector<Components*> comp);
 };
 
 
