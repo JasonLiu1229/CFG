@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <set>
 
 class Components;
 
@@ -40,6 +41,10 @@ public:
     bool findIntersection(const vector<Components*>& set1, const vector<Components*>& set2);
 
     bool isNull(Components* comp);
+
+    set<pair<Components*, Components*>> findUnitPairs();
+
+    set<pair<Components*, Components*>> recUnitPairs(Components* currentSymbol);
 
     //==== Conversion ====//
     void toCNF();

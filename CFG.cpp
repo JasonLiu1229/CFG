@@ -227,6 +227,18 @@ bool CFG::isNull(Components* comp) {
     return false;
 }
 
+set<pair<Components *, Components *>> CFG::findUnitPairs() {
+    set<pair<Components *, Components *>> setPairs;
+    for (auto i : variables){
+        for (auto j : i->getRule()){
+            if (j.size() == 1 and !j[0]->isTv()){
+                setPairs.insert({i, j[0]});
+            }
+        }
+    }
+    return setPairs;
+}
+
 void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
     // original
     cout << "Original CFG:" << endl << endl;
@@ -261,10 +273,32 @@ void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
     print();
 
     // eliminate unit pairs
+    set<pair<Components*, Components*>> unitP = findUnitPairs();
 
+    for (auto i : unitP){
+        Components* firstVar = i.first;
+        Components* secondVar = i.second;
+        firstVar->deleteProduction({secondVar});
+        firstVar->addRules(secondVar->getRule());
+        firstVar->cleanUp();
+    }
+
+    for (auto i : variables){
+        if (i->getRule().empty()){
+            for (auto j : variables){
+                j->deleteProduction({i});
+            }
+        }
+    }
+
+    print();
 
     // eliminate useless symbols
-
+    for (auto i : variables){
+        if (i->getRule().empty()){
+            // search for
+        }
+    }
 
     // replacing terminals wit bad bodies
 

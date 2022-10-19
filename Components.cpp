@@ -1,12 +1,9 @@
-//
-// Created by liuja on 01/10/2022.
-//
-
 #include "Components.h"
 
 #include <utility>
 #include <iostream>
 #include <algorithm>
+#include <set>
 
 Components::Components() {}
 
@@ -49,8 +46,18 @@ void Components::addRule(const vector<Components *> &rule) {
 }
 
 void Components::addRules(const vector<vector<Components *>> &newRules) {
-    set_union(newRules.begin(), newRules.end(), rules.begin(), rules.end(), back_inserter(rules));
-    /*cleanUp();*/
+    set<vector<Components*>> setRules;
+    for (const auto& i : rules){
+        setRules.insert(i);
+    }
+    for (const auto& i : newRules){
+        setRules.insert(i);
+    }
+    vector<vector<Components*>> vecRules;
+    for (const auto& i : setRules){
+        vecRules.push_back(i);
+    }
+    rules = vecRules;
 }
 
 void Components::cleanUp() {
@@ -85,6 +92,15 @@ void Components::deleteEpsilonProd() {
     }
 }
 
+void Components::deleteProduction(const vector<Components*> &delVector) {
+    for (int i = 0; i < rules.size(); ++i) {
+        if (rules[i] == delVector){
+            rules.erase(rules.begin() + i);
+            break;
+        }
+    }
+}
+
 bool Components::operator==(const string &cName) const{
     return cName == name;
 }
@@ -95,15 +111,6 @@ bool Components::operator!=(const string &cName) const {
 
 Components::~Components() {
 
-}
-
-bool Components::inVector(vector<vector<Components*>> comps, vector<Components*> comp) {
-    for (auto i : comps){
-        if (i == comp){
-            return true;
-        }
-    }
-    return false;
 }
 
 

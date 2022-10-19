@@ -12,7 +12,9 @@ Default constructor + printfunctie
 ### TOi 2: 11 / 10 / 2022
 Json input reading with constructor
 
-### TOi 3: 18 / 10 / 2022
+### TOi 3: 
 Start on TOi conversion of CFG to CNF 
 #### Progress update:
-Epsilon elimination is done, created a extra class to determine new production bodies
+18 / 10 / 2022: Epsilon elimination is done, created a extra class to determine new production bodies
+19 / 10 / 2022: Unit productions, useless symbols
+

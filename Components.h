@@ -52,6 +52,8 @@ public:
 
     void deleteEpsilonProd();
 
+    void deleteProduction(const vector<Components*> &delVector);
+
     //==== Operator overload ====//
     bool operator==(const string &cName) const;
 
@@ -60,8 +62,6 @@ public:
     //==== Destructors ====//
     virtual ~Components();
 
-private:
-    bool inVector(vector<vector<Components*>> comps, vector<Components*> comp);
 };
 
 
