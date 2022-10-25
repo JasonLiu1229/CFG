@@ -12,9 +12,10 @@ using namespace std;
 
 class Components {
     //==== Main Variables ====//
-    string name;                        // Component name
-    bool TV;                            // true = terminal and false = variable
-    vector<vector<Components*>> rules;   // production rule if TV = false
+    string name;                                // Component name
+    vector<vector<Components*>> rules;          // production rule if TV = false
+    bool TV;                                    // true = terminal and false = variable
+    bool gen;                                   // generating
 
 public:
     //==== Constructors ====//
@@ -37,6 +38,10 @@ public:
 
     void setRule(const vector<vector<Components *>> &rule);
 
+    bool isGen() const;
+
+    void setGen(bool gen);
+
     //==== Functions ====//
     void addRule(const vector<Components*> &rule);
 
@@ -54,14 +59,24 @@ public:
 
     void deleteProduction(const vector<Components*> &delVector);
 
+    static bool comp(Components* x, Components* b){return *x<*b;}
+
     //==== Operator overload ====//
     bool operator==(const string &cName) const;
 
     bool operator!=(const string &cName) const;
 
+    bool operator<(const Components &rhs) const;
+
+    bool operator>(const Components &rhs) const;
+
+    bool operator<=(const Components &rhs) const;
+
+    bool operator>=(const Components &rhs) const;
+
+
     //==== Destructors ====//
     virtual ~Components();
-
 };
 
 

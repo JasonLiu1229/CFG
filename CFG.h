@@ -44,7 +44,25 @@ public:
 
     set<pair<Components*, Components*>> findUnitPairs();
 
-    set<pair<Components*, Components*>> recUnitPairs(Components* currentSymbol);
+    void allUnitPairs(vector<pair<Components*, Components*>> &allPairs,Components* currentSymbol, Components* nextSymbol = nullptr);
+
+    vector<pair<Components*, Components*>> findAllUnitPairs();
+
+    int sizeOfProds();
+
+    void findGen(vector<Components*>& genSym);
+
+    bool recurveGen(vector<Components*>& genSym, Components* curSym, map<Components*, bool>& mappie);
+
+    void findReachable(vector<Components*>& reSym);
+
+    void recurveRe(vector<Components*>& reSym, Components* currentSym, map<Components*, bool> mappie);
+
+    void findUsefull(vector<Components*>& useSym, Components* currentSym);
+
+    static bool comp(vector<Components*> x, vector<Components*> y);
+
+    void reset();
 
     //==== Conversion ====//
     void toCNF();

@@ -5,12 +5,12 @@
 #include <algorithm>
 #include <set>
 
-Components::Components() {}
+Components::Components() : gen(false){}
 
-Components::Components(string name, bool tv) : name(std::move(name)), TV(tv) {}
+Components::Components(string name, bool tv) : name(std::move(name)), TV(tv), gen(false) {}
 
 Components::Components(string name, bool tv, const vector<vector<Components *>> &rule) : name(std::move(name)), TV(tv),
-                                                                                                rules(rule) {}
+                                                                                                rules(rule), gen(false) {}
 
 const string &Components::getName() const {
     return name;
@@ -34,6 +34,14 @@ const vector<vector<Components *>> &Components::getRule() const {
 
 void Components::setRule(const vector<vector<Components *>> &rule) {
     Components::rules = rule;
+}
+
+bool Components::isGen() const {
+    return gen;
+}
+
+void Components::setGen(bool gen) {
+    Components::gen = gen;
 }
 
 void Components::addRule(const vector<Components *> &rule) {
@@ -64,11 +72,11 @@ void Components::cleanUp() {
     sort(rules.begin(), rules.end());
 }
 
+
 void Components::addRuleSort(const vector<Components *> &rule) {
     rules.push_back(rule);
     sort(rules.begin(), rules.end());
 }
-
 
 void Components::printProd() {
     for (const auto& item : rules){
@@ -107,6 +115,22 @@ bool Components::operator==(const string &cName) const{
 
 bool Components::operator!=(const string &cName) const {
     return !(cName == name);
+}
+
+bool Components::operator<(const Components &rhs) const {
+    return name < rhs.name;
+}
+
+bool Components::operator>(const Components &rhs) const {
+    return rhs < *this;
+}
+
+bool Components::operator<=(const Components &rhs) const {
+    return !(rhs < *this);
+}
+
+bool Components::operator>=(const Components &rhs) const {
+    return !(*this < rhs);
 }
 
 Components::~Components() {

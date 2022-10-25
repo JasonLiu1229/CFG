@@ -239,6 +239,141 @@ set<pair<Components *, Components *>> CFG::findUnitPairs() {
     return setPairs;
 }
 
+void CFG::allUnitPairs(vector<pair<Components *, Components *>> &allPairs, Components *currentSymbol, Components *nextSymbol) {
+    vector<vector<Components*>> nextProductions;
+    nextProductions = nextSymbol == nullptr ? currentSymbol->getRule() : nextSymbol->getRule();
+    for (auto i : nextProductions){
+        if (i.size() == 1 and !i[0]->isTv()){
+            allPairs.emplace_back(currentSymbol, i[0]);
+            allUnitPairs(allPairs, currentSymbol, i[0]);
+        }
+    }
+}
+
+vector<pair<Components *, Components *>> CFG::findAllUnitPairs() {
+    vector<pair<Components *, Components *>> allPairs;
+
+    for (auto i : variables){
+        allPairs.emplace_back(i,i);
+        allUnitPairs(allPairs, i);
+    }
+
+    set<pair<Components *, Components *>> setPair;
+    for (auto i : allPairs){
+        setPair.insert(i);
+    }
+    allPairs = {};
+    for (auto i : setPair){
+        allPairs.push_back(i);
+    }
+    return allPairs;
+}
+
+int CFG::sizeOfProds() {
+    int size = 0;
+    for (auto i : variables){
+        size += i->getRule().size();
+    }
+    return size;
+}
+
+
+void CFG::findGen(vector<Components *> &genSym) {
+    for (auto i : terminals){
+        i->setGen(true);
+        genSym.push_back(i);
+    }
+    for (auto i : variables){
+        bool insert = true;
+        for (auto j : i->getRule()) {
+            bool terminal = true;
+            for (auto k : j){
+                if (!k->isGen()){
+                    terminal = false;
+                }
+            }
+            if (terminal){
+                genSym.push_back(i);
+                insert = false;
+            }
+        }
+        if (insert){
+            map<Components*, bool> mappie;
+            i->setGen(recurveGen(genSym, i, mappie));
+        }
+    }
+    /*vector<Components*> res;
+    set_difference(varTer.begin(), varTer.end(), genSym.begin(), genSym.end(), back_inserter(res, res.begin()));
+    for (auto i : res){
+        map<Components*, bool> mappie;
+        recurveGen(genSym, i, mappie);
+    }*/
+}
+
+bool CFG::recurveGen(vector<Components *> &genSym, Components* curSym, map<Components*, bool>& mappie) {;
+    if (mappie[curSym]){
+        return false;
+    }
+    for (auto i : curSym->getRule()){
+        if (i.size() == 1 and i[0]->isGen()){
+            genSym.push_back(curSym);
+            return true;
+        }
+        else{
+            bool gen = true;
+            for (auto j : i){
+                if (curSym == j){
+                    continue;
+                }
+                mappie[curSym] = true;
+                if (!recurveGen(genSym, j, mappie)){
+                    gen = false;
+                }
+            }
+            if (gen){
+                return gen;
+            }
+        }
+    }
+    return false;
+}
+
+void CFG::findReachable(vector<Components*>&reSym) {
+
+}
+
+
+void CFG::recurveRe(vector<Components *> &reSym, Components *currentSym, map<Components*, bool> mappie) {
+
+}
+
+bool CFG::comp(vector<Components *> x, vector<Components *> y) {
+    for (int i = 0; i < min(x.size(), y.size()); ++i) {
+        if (x[i] != y[i]){
+            return Components::comp(x[i], y[i]);
+        }
+        else if (x[i] == y[i] and i == min(x.size(), y.size()) - 1){
+            return min(x.size(), y.size()) == y.size();
+        }
+    }
+    return false;
+}
+
+void CFG::reset() {
+    vector<Components*> vars;
+    vector<Components*> terms;
+    for (const auto i : varTer){
+        if (i->isTv()){
+            terms.push_back(i);
+        }
+        else {
+            vars.push_back(i);
+        }
+    }
+    variables = vars;
+    terminals = terms;
+}
+
 void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
     // original
     cout << "Original CFG:" << endl << endl;
@@ -246,10 +381,23 @@ void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
     print();
 
     cout << endl;
+    cout << "-------------------------------------" << endl;
+    cout << endl;
 
     // eliminate epsilon
+    int orgSize = sizeOfProds();
+    cout << " >> Eliminating epsilon productions" << endl;
     vector<Components*> nullVars = nullVariables();
     vector<Components*> epsVars = epsilonVariables();
+    cout << "  Nullables are {";
+    sort(nullVars.begin(), nullVars.end());
+    for (auto i : nullVars){
+        cout << i->getName();
+        if (i != *nullVars.rbegin()){
+            cout << ", ";
+        }
+    }
+    cout << "}" << endl;
 
     for (auto i : variables){
         vector<vector<Components*>> allProds;
@@ -265,22 +413,48 @@ void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
             }
         }
         if (!allProds.empty()){
+            sort(allProds.begin(),allProds.end(), comp);
             i->setRule(allProds);
-            i->cleanUp();
         }
     }
 
+    int newSize = sizeOfProds();
+    cout << "  Created " << newSize << " productions, original had " << orgSize << endl << endl;
+
     print();
 
+    cout << endl;
+    cout << "-------------------------------------" << endl;
+    cout << endl;
+
     // eliminate unit pairs
+    cout << " >> Eliminating unit pairs" << endl;
+
     set<pair<Components*, Components*>> unitP = findUnitPairs();
+    vector<pair<Components*, Components*>> allpairs = findAllUnitPairs();
+
+    sort(allpairs.begin(), allpairs.end());
+
+    cout << "  Found " << unitP.size() << " unit productions" << endl;
+    cout << "  Unit pairs: {";
+    for (auto i : allpairs){
+        cout << '(' << i.first->getName() << ", " << i.second->getName() << ')';
+        if (i != *allpairs.rbegin()){
+            cout << ", ";
+        }
+    }
+    cout << '}' << endl;
+
+    orgSize = newSize;
 
     for (auto i : unitP){
         Components* firstVar = i.first;
         Components* secondVar = i.second;
         firstVar->deleteProduction({secondVar});
         firstVar->addRules(secondVar->getRule());
-        firstVar->cleanUp();
+        vector<vector<Components*>> allProds = firstVar->getRule();
+        sort(allProds.begin(),allProds.end(), comp);
+        firstVar->setRule(allProds);
     }
 
     for (auto i : variables){
@@ -291,21 +465,61 @@ void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
         }
     }
 
+    newSize = sizeOfProds();
+    cout << "  Created " << newSize << " productions, original had " << orgSize << endl << endl;
+
     print();
 
+    cout << endl;
+    cout << "-------------------------------------" << endl;
+    cout << endl;
+
     // eliminate useless symbols
-    for (auto i : variables){
-        if (i->getRule().empty()){
-            // search for
+    int orgSizeVars = variables.size();
+    int orgSizeTerms = terminals.size();
+
+    //* search for generating variables *//
+    vector<Components*> genSymbol;
+    findGen(genSymbol);
+    genSymbol.erase(unique(genSymbol.begin(),genSymbol.end()), genSymbol.end());
+    sort(genSymbol.begin(), genSymbol.end(), Components::comp);
+    varTer = genSymbol;
+    reset();
+    cout << " >> Eliminating useless symbols" << endl;
+    cout << "  Generating symbols: {";
+    for (auto i : genSymbol) {
+        cout << i->getName();
+        if (i != *genSymbol.rbegin()){
+            cout << ", ";
+        }
+        else {
+            cout << "}" << endl;
         }
     }
+
+    //* search for reachable symbols *//
+    vector<Components*> reSymbol;
+
+
+    //* search for useful symbols *//
+
+    cout << endl;
+    cout << "-------------------------------------" << endl;
+    cout << endl;
 
     // replacing terminals wit bad bodies
 
 
+    cout << endl;
+    cout << "-------------------------------------" << endl;
+    cout << endl;
+
     // breaking apart bodies, adding new variables
 
 
+    cout << endl;
+    cout << "-------------------------------------" << endl;
+    cout << endl;
 }
 
 CFG::~CFG() {
