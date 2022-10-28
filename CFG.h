@@ -32,6 +32,8 @@ public:
     //==== Functions ====//
     void print();
 
+    bool accepts(const string& input);
+
     //bool epsilonExist();
 
     vector<Components*> epsilonVariables();
