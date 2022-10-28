@@ -28,3 +28,13 @@ add_executable(CNF_testfile
         CNF_testfile.cpp
         ${CFG_lib}
         )
+
+add_executable(CYK_testfile
+        CYK_testfile.cpp
+        ${CFG_lib}
+        )
+
+INSTALL(TARGETS CYK_testfile CNF_testfile CFG_testfile2 CFG_testFile1 DESTINATION bin)
+IF (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    SET (CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/installed" CACHE PATH "default install path" FORCE)
+ENDIF()

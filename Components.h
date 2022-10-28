@@ -16,6 +16,7 @@ class Components {
     vector<vector<Components*>> rules;          // production rule if TV = false
     bool TV;                                    // true = terminal and false = variable
     bool gen;                                   // generating
+    bool reach;                                 // reachable
 
 public:
     //==== Constructors ====//
@@ -41,6 +42,14 @@ public:
     bool isGen() const;
 
     void setGen(bool gen);
+
+    const vector<vector<Components *>> &getRules() const;
+
+    void setRules(const vector<vector<Components *>> &rules);
+
+    bool isReach() const;
+
+    void setReach(bool reach);
 
     //==== Functions ====//
     void addRule(const vector<Components*> &rule);

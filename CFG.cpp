@@ -10,7 +10,7 @@
 
 using json = nlohmann::json;
 
-CFG::CFG() {
+CFG::CFG() : count(0){
     // Variables
     auto* S = new Components("S", false);
     auto* BINDIGIT = new Components("BINDIGIT", false);
@@ -48,7 +48,7 @@ CFG::CFG() {
     starter = {S};
 }
 
-CFG::CFG(const string& fileName) {
+CFG::CFG(const string& fileName) : count(0){
     // inlezen uit file
     ifstream input(fileName);
 
@@ -294,6 +294,7 @@ void CFG::findGen(vector<Components *> &genSym) {
             }
             if (terminal){
                 genSym.push_back(i);
+                i->setGen(true);
                 insert = false;
             }
         }
@@ -302,12 +303,6 @@ void CFG::findGen(vector<Components *> &genSym) {
             i->setGen(recurveGen(genSym, i, mappie));
         }
     }
-    /*vector<Components*> res;
-    set_difference(varTer.begin(), varTer.end(), genSym.begin(), genSym.end(), back_inserter(res, res.begin()));
-    for (auto i : res){
-        map<Components*, bool> mappie;
-        recurveGen(genSym, i, mappie);
-    }*/
 }
 
 bool CFG::recurveGen(vector<Components *> &genSym, Components* curSym, map<Components*, bool>& mappie) {;
@@ -317,12 +312,13 @@ bool CFG::recurveGen(vector<Components *> &genSym, Components* curSym, map<Compo
     for (auto i : curSym->getRule()){
         if (i.size() == 1 and i[0]->isGen()){
             genSym.push_back(curSym);
+            curSym->setGen(true);
             return true;
         }
         else{
             bool gen = true;
             for (auto j : i){
-                if (curSym == j){
+                if (curSym == j or j->isGen()){
                     continue;
                 }
                 mappie[curSym] = true;
@@ -331,6 +327,8 @@ bool CFG::recurveGen(vector<Components *> &genSym, Components* curSym, map<Compo
                 }
             }
             if (gen){
+                curSym->setGen(true);
+                genSym.push_back(curSym);
                 return gen;
             }
         }
@@ -338,13 +336,138 @@ bool CFG::recurveGen(vector<Components *> &genSym, Components* curSym, map<Compo
     return false;
 }
 
-void CFG::findReachable(vector<Components*>&reSym) {
-
+void CFG::deleteProdGen(const vector<Components*>& gen) {
+    vector<Components*> notGen;
+    for (auto i : variables){
+        if (!i->isGen()){
+            notGen.push_back(i);
+        }
+    }
+    for (auto i : gen){
+        vector<vector<Components*>> items = i->getRule();
+        for (auto k : notGen){
+            for (auto j = items.begin(); j != items.end(); j++){
+                if (find(j->begin() , j->end() , k) != j->end()){
+                    j = items.erase(j);
+                    j--;
+                }
+            }
+        }
+        i->setRule(items);
+    }
+    for (auto i : notGen){
+        delete i;
+    }
 }
 
 
-void CFG::recurveRe(vector<Components *> &reSym, Components *currentSym, map<Components*, bool> mappie) {
+void CFG::findReachable(set<Components*>&reSym) {
+    for (auto i : starter){
+        reSym.insert(i);
+        i->setReach(true);
+        map<Components*, bool> mappie;
+        recurveRe(reSym, i, mappie);
+    }
+}
 
+void CFG::recurveRe(set<Components *> &reSym, Components *currentSym, map<Components*, bool> mappie) {
+    for (const auto& i : currentSym->getRule()){
+        for (auto j : i){
+            if (mappie[j]){
+                continue;
+            }
+            else {
+                reSym.insert(j);
+                j->setReach(true);
+                mappie[currentSym] = true;
+                recurveRe(reSym, j, mappie);
+            }
+        }
+    }
+}
+
+void CFG::deleteProdReach(const set<Components*>& reach) {
+    vector<Components*> notReach;
+    for (auto i : variables){
+        if (!i->isReach()){
+            notReach.push_back(i);
+        }
+    }
+    for (auto i : reach){
+        vector<vector<Components*>> items = i->getRule();
+        for (auto k : notReach){
+            for (auto j = items.begin(); j != items.end(); j++){
+                if (find(j->begin() , j->end() , k) != j->end()){
+                    j = items.erase(j);
+                    j--;
+                }
+            }
+        }
+        i->setRule(items);
+    }
+    for (auto i : notReach){
+        delete i;
+    }
+}
+
+void CFG::createBoddies(vector<Components*> &newVars) {
+    for (auto i : variables){
+        vector<vector<Components*>> items = i->getRule();
+        for (auto& j : items){
+            if (j.size() == 1){
+                continue;
+            }
+            else {
+                for (auto &k : j){
+                    if (k->isTv()){
+                        int size = variables.size();
+                        k = searchForVariable(k);
+                        if (size < variables.size()){
+                            newVars.push_back(k);
+                        }
+                    }
+                }
+            }
+        }
+        i->setRule(items);
+    }
+}
+
+Components *CFG::searchForVariable(Components* terminal) {
+    for (auto i : variables){
+        for (auto j : i->getRule()){
+            if (j.size() == 1 and j[0] == terminal){
+                return i;
+            }
+        }
+    }
+    auto* newComp = new Components('_' + terminal->getName(), false, {{terminal}});
+    variables.push_back(newComp);
+    varTer.push_back(newComp);
+    return newComp;
+}
+
+void CFG::breakBoddies(Components* curSym) {
+    static int number = {2};
+    vector<vector<Components*>> items = curSym->getRules();
+    for (auto& i : items){
+        if (i.size() > 2){
+            count++;
+            vector<Components*> prod = {i[i.size()-2], i[i.size()-1]};
+            vector<Components*> newProd;
+            newProd.insert(newProd.begin(), i.begin(), i.end() - 2);
+            auto* newComp = new Components(curSym->getName() + "_" + to_string(number), false, {prod});
+            variables.push_back(newComp);
+            varTer.push_back(newComp);
+            newProd.push_back(newComp);
+            i = newProd;
+            curSym->setRules(items);
+            number++;
+            breakBoddies(curSym);
+            number = 2;
+            return;
+        }
+    }
 }
 
 bool CFG::comp(vector<Components *> x, vector<Components *> y) {
@@ -424,8 +547,6 @@ void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
     print();
 
     cout << endl;
-    cout << "-------------------------------------" << endl;
-    cout << endl;
 
     // eliminate unit pairs
     cout << " >> Eliminating unit pairs" << endl;
@@ -433,13 +554,20 @@ void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
     set<pair<Components*, Components*>> unitP = findUnitPairs();
     vector<pair<Components*, Components*>> allpairs = findAllUnitPairs();
 
+    vector<vector<Components*>> allPairsV;
+
+    for (auto i : allpairs){
+        allPairsV.push_back({i.first, i.second});
+    }
+    sort(allPairsV.begin(), allPairsV.end(), comp);
+
     sort(allpairs.begin(), allpairs.end());
 
     cout << "  Found " << unitP.size() << " unit productions" << endl;
     cout << "  Unit pairs: {";
-    for (auto i : allpairs){
-        cout << '(' << i.first->getName() << ", " << i.second->getName() << ')';
-        if (i != *allpairs.rbegin()){
+    for (auto i : allPairsV){
+        cout << '(' << i[0]->getName() << ", " << i[1]->getName() << ')';
+        if (i != *allPairsV.rbegin()){
             cout << ", ";
         }
     }
@@ -466,23 +594,26 @@ void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
     }
 
     newSize = sizeOfProds();
-    cout << "  Created " << newSize << " productions, original had " << orgSize << endl << endl;
+    cout << "  Created " << newSize << " new productions, original had " << orgSize << endl << endl;
 
     print();
 
-    cout << endl;
-    cout << "-------------------------------------" << endl;
     cout << endl;
 
     // eliminate useless symbols
     int orgSizeVars = variables.size();
     int orgSizeTerms = terminals.size();
+    int orgSizeProds = 0;
+    for (auto i : variables){
+        orgSizeProds += i->getRule().size();
+    }
 
     //* search for generating variables *//
     vector<Components*> genSymbol;
     findGen(genSymbol);
     genSymbol.erase(unique(genSymbol.begin(),genSymbol.end()), genSymbol.end());
     sort(genSymbol.begin(), genSymbol.end(), Components::comp);
+    deleteProdGen(genSymbol);
     varTer = genSymbol;
     reset();
     cout << " >> Eliminating useless symbols" << endl;
@@ -498,28 +629,95 @@ void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)
     }
 
     //* search for reachable symbols *//
-    vector<Components*> reSymbol;
-
+    set<Components*> reSymbol;
+    findReachable(reSymbol);
+    vector<Components*> reSymbolV;
+    for (auto i : reSymbol){
+        reSymbolV.push_back(i);
+    }
+    sort(reSymbolV.begin(), reSymbolV.end(), Components::comp);
+    cout << "  Reachable symbols: {";
+    for (auto i : reSymbolV) {
+        cout << i->getName();
+        if (i != *reSymbolV.rbegin()){
+            cout << ", ";
+        }
+        else {
+            cout << "}" << endl;
+        }
+    }
+    deleteProdReach(reSymbol);
 
     //* search for useful symbols *//
+    cout << "  Useful symbols: {";
+    for (auto i : reSymbolV) {
+        cout << i->getName();
+        if (i != *reSymbolV.rbegin()){
+            cout << ", ";
+        }
+        else {
+            cout << "}" << endl;
+        }
+    }
 
-    cout << endl;
-    cout << "-------------------------------------" << endl;
+    vector<Components*> reVSym;
+    for (auto i : reSymbol){
+        reVSym.push_back(i);
+    }
+    varTer = reVSym;
+    reset();
+
+    cout << "  Removed " << (orgSizeVars - variables.size()) << " variables, " << (orgSizeTerms - terminals.size()) << " terminals and ";
+    int newProdSize = 0;
+    for (auto i : variables){
+        newProdSize += i->getRule().size();
+    }
+    cout << (orgSizeProds - newProdSize) << " productions" << endl << endl;
+
+    print();
+
     cout << endl;
 
     // replacing terminals wit bad bodies
+    cout << " >> Replacing terminals in bad bodies" << endl;
+    orgSize = variables.size();
+    orgSizeProds = 0;
+    for (auto i : variables){
+        orgSizeProds += i->getRule().size();
+    }
+    vector<Components*> newVars;
+    createBoddies(newVars);
+    newSize = variables.size();
+    newProdSize = 0;
+    for (auto i : variables){
+        newProdSize += i->getRule().size();
+    }
+    cout << "  Added " << newSize - orgSize << " new variables: {";
+    sort(newVars.begin(), newVars.end(), Components::comp);
+    for (auto i : newVars){
+        cout << i->getName();
+        if (i != *newVars.rbegin()){
+            cout << ", ";
+        }
+    }
+    cout << "}" << endl;
+    cout << "  Created " << newProdSize << " new productions, original had " << orgSizeProds << endl << endl;
+    print();
 
-
-    cout << endl;
-    cout << "-------------------------------------" << endl;
     cout << endl;
 
     // breaking apart bodies, adding new variables
-
-
-    cout << endl;
-    cout << "-------------------------------------" << endl;
-    cout << endl;
+    orgSizeVars = variables.size();
+    for (auto i : variables){
+        breakBoddies(i);
+    }
+    newSize = variables.size();
+    vector<Components*> symbols = variables;
+    sort(symbols.begin(), symbols.end(), Components::comp);
+    variables = symbols;
+    cout << " >> Broke " << count << " bodies, added " << newSize - orgSizeVars << " new variables" << endl;
+    cout << ">>> Result CFG:" << endl << endl;
+    print();
 }
 
 CFG::~CFG() {

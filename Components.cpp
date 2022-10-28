@@ -5,12 +5,12 @@
 #include <algorithm>
 #include <set>
 
-Components::Components() : gen(false){}
+Components::Components() : gen(false), reach(false){}
 
-Components::Components(string name, bool tv) : name(std::move(name)), TV(tv), gen(false) {}
+Components::Components(string name, bool tv) : name(std::move(name)), TV(tv), gen(false), reach(false){}
 
 Components::Components(string name, bool tv, const vector<vector<Components *>> &rule) : name(std::move(name)), TV(tv),
-                                                                                                rules(rule), gen(false) {}
+                                                                                                rules(rule), gen(false), reach(false) {}
 
 const string &Components::getName() const {
     return name;
@@ -44,6 +44,22 @@ void Components::setGen(bool gen) {
     Components::gen = gen;
 }
 
+const vector<vector<Components *>> &Components::getRules() const {
+    return rules;
+}
+
+void Components::setRules(const vector<vector<Components *>> &rules) {
+    Components::rules = rules;
+}
+
+bool Components::isReach() const {
+    return reach;
+}
+
+void Components::setReach(bool reach) {
+    Components::reach = reach;
+}
+
 void Components::addRule(const vector<Components *> &rule) {
     if (rule.empty()){
         rules.insert(rules.begin(), rule);
@@ -68,10 +84,10 @@ void Components::addRules(const vector<vector<Components *>> &newRules) {
     rules = vecRules;
 }
 
+
 void Components::cleanUp() {
     sort(rules.begin(), rules.end());
 }
-
 
 void Components::addRuleSort(const vector<Components *> &rule) {
     rules.push_back(rule);
@@ -79,8 +95,8 @@ void Components::addRuleSort(const vector<Components *> &rule) {
 }
 
 void Components::printProd() {
-    for (const auto& item : rules){
-        cout << "    " << name << " -> `";
+    /*for (const auto& item : rules){
+        cout << "  " << name << " -> `";
         for (int i = 0; i < item.size(); ++i) {
             cout << item[i]->name;
             if (i != item.size()-1){
@@ -88,6 +104,22 @@ void Components::printProd() {
             }
         }
         cout << "`"<< endl;
+    }*/
+    vector<string> stringProds;
+    for (const auto &item : rules){
+        string prod = "`";
+        for (int i = 0; i < item.size(); ++i) {
+            prod += item[i]->name;
+            if (i != item.size()-1){
+                prod += " ";
+            }
+        }
+        prod += "`";
+        stringProds.push_back(prod);
+    }
+    sort(stringProds.begin(), stringProds.end());
+    for (const auto &item : stringProds) {
+        cout << "  " << name << " -> " << item << endl;
     }
 }
 

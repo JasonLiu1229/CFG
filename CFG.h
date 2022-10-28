@@ -22,7 +22,7 @@ class CFG {
     string yield;                           // end result
 
     //==== Secondary Components ====//
-
+    int count;
 public:
     //==== Constructors ====//
     CFG();
@@ -54,11 +54,19 @@ public:
 
     bool recurveGen(vector<Components*>& genSym, Components* curSym, map<Components*, bool>& mappie);
 
-    void findReachable(vector<Components*>& reSym);
+    void deleteProdGen(const vector<Components*>& gen);
 
-    void recurveRe(vector<Components*>& reSym, Components* currentSym, map<Components*, bool> mappie);
+    void findReachable(set<Components*>& reSym);
 
-    void findUsefull(vector<Components*>& useSym, Components* currentSym);
+    void recurveRe(set<Components*>& reSym, Components* currentSym, map<Components*, bool> mappie);
+
+    void deleteProdReach(const set<Components*>& reach);
+
+    void createBoddies(vector<Components*> &newVars);
+
+    void breakBoddies(Components* curSym);
+
+    Components* searchForVariable(Components* terminal);
 
     static bool comp(vector<Components*> x, vector<Components*> y);
 
