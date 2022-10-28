@@ -171,6 +171,12 @@ void CFG::print() {
     cout << endl;
 }
 
+bool CFG::accepts(const string &input) {
+    map<pair<int, int>, set<Components*>> CYK;
+
+
+}
+
 /*bool CFG::epsilonExist() {      // true: if there is an epsilon production
     for (auto i : variables) {
         for (auto j : i->getRule()){
@@ -269,6 +275,7 @@ vector<pair<Components *, Components *>> CFG::findAllUnitPairs() {
     return allPairs;
 }
 
+
 int CFG::sizeOfProds() {
     int size = 0;
     for (auto i : variables){
@@ -276,7 +283,6 @@ int CFG::sizeOfProds() {
     }
     return size;
 }
-
 
 void CFG::findGen(vector<Components *> &genSym) {
     for (auto i : terminals){
@@ -336,6 +342,7 @@ bool CFG::recurveGen(vector<Components *> &genSym, Components* curSym, map<Compo
     return false;
 }
 
+
 void CFG::deleteProdGen(const vector<Components*>& gen) {
     vector<Components*> notGen;
     for (auto i : variables){
@@ -359,7 +366,6 @@ void CFG::deleteProdGen(const vector<Components*>& gen) {
         delete i;
     }
 }
-
 
 void CFG::findReachable(set<Components*>&reSym) {
     for (auto i : starter){
