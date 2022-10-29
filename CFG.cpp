@@ -171,10 +171,112 @@ void CFG::print() {
     cout << endl;
 }
 
-bool CFG::accepts(const string &input) {
+void CFG::accepts(const string &input) {
     map<pair<int, int>, set<Components*>> CYK;
 
+    // bottom layer
+    for (int i = 1; i < input.size() + 1; ++i) {
+        string temp;
+        temp += input[i-1];
+        CYK[{i,i}] = findBase(temp);
+    }
 
+    // start of algorithm
+    int j = 1;
+    int k = 1;
+    int n = 0;
+    for (int m = 1 ; m < input.size(); m++){
+        for (int i = 2; i < input.size() + 1; ++i) {
+            set<Components*> theWay;
+            while (j != i){
+                if (i-m >= i or i-m <= 0 or i-n > i or i-m > i-j){
+                    break;
+                }
+                for (const auto& l : cross(CYK[{i - m, i-j}], CYK[{i - n, i}])){
+                    set<Components*> anotherWay = findSymbols(l);
+                    theWay.insert(anotherWay.begin(), anotherWay.end());
+                }
+                n++;
+                j++;
+            }
+            j = 1;
+            n = 0;
+            if (i-m < i and i-m > 0){
+                CYK[{i-m, i}] = theWay;
+            }
+        }
+    }
+
+    bool accepting = false;
+    for (auto i : CYK[{1,input.size()}]){
+        if (i == starter[0]){
+            accepting = true;
+        }
+    }
+
+    // start of print
+    vector<int> rowMaxStringSize;
+    for (int i = 1; i < input.size() + 1; i++){
+        vector<int> colMaxStringSize;
+        for (int l = i; l < input.size() + 1; ++l) {
+            colMaxStringSize.push_back(CYK[{i,l}].size());
+        }
+        int size = *max_element(colMaxStringSize.begin(), colMaxStringSize.end());
+        if (size <= 1){
+            rowMaxStringSize.push_back(size);
+        }
+        else {
+            rowMaxStringSize.push_back(size + 2*(size - 1));
+        }
+    }
+
+    int diff = input.size() - 1;
+    for (int ud = 0; ud < input.size(); ++ud){                 // up --> down
+        for (int lr = 1; lr < input.size() + 1; ++lr){             // left --> right
+            if (lr + diff > input.size()){
+                break;
+            }
+            cout << "|";
+            string tempPrint = " {";
+            for (auto item : CYK[{lr, lr + diff}]) {
+                tempPrint += item->getName();
+                if (item != *CYK[{lr, lr + diff}].rbegin()){
+                    tempPrint += ", ";
+                }
+            }
+            tempPrint += "}  ";
+            if (tempPrint.size() - 5 < rowMaxStringSize[lr-1]){
+                int tempSize = tempPrint.size();
+                for (int l = 0; l < rowMaxStringSize[lr - 1] - (tempSize - 5); ++l) {
+                    tempPrint += " ";
+                }
+            }
+            cout << tempPrint;
+        }
+        diff--;
+        cout << "|";
+        cout << endl;
+    }
+    cout << boolalpha << accepting << endl;
+}
+
+void CFG::ll() {
+    // LL(1) Table
+    map<pair<Components*, Components*>, vector<Components*>> table; // Variable / Terminal --> productions
+
+    // Calculate first and follow
+    map<Components*, vector<Components*>> firstTable;
+    map<Components*, vector<Components*>> followTable;
+
+    for (auto item : variables){
+        firstTable[item] = first(item);
+    }
+
+    for (auto item : variables){
+        followTable[item] = follow(item);
+    }
+
+    // Generate Table
 }
 
 /*bool CFG::epsilonExist() {      // true: if there is an epsilon production
@@ -256,6 +358,7 @@ void CFG::allUnitPairs(vector<pair<Components *, Components *>> &allPairs, Compo
     }
 }
 
+
 vector<pair<Components *, Components *>> CFG::findAllUnitPairs() {
     vector<pair<Components *, Components *>> allPairs;
 
@@ -274,7 +377,6 @@ vector<pair<Components *, Components *>> CFG::findAllUnitPairs() {
     }
     return allPairs;
 }
-
 
 int CFG::sizeOfProds() {
     int size = 0;
@@ -311,6 +413,7 @@ void CFG::findGen(vector<Components *> &genSym) {
     }
 }
 
+
 bool CFG::recurveGen(vector<Components *> &genSym, Components* curSym, map<Components*, bool>& mappie) {;
     if (mappie[curSym]){
         return false;
@@ -341,7 +444,6 @@ bool CFG::recurveGen(vector<Components *> &genSym, Components* curSym, map<Compo
     }
     return false;
 }
-
 
 void CFG::deleteProdGen(const vector<Components*>& gen) {
     vector<Components*> notGen;
@@ -501,6 +603,56 @@ void CFG::reset() {
     }
     variables = vars;
     terminals = terms;
+}
+
+set<Components *> CFG::findSymbols(const vector<Components*>& prod) {
+    set<Components*> output;
+    for (auto i : variables){
+        for (const auto& j : i->getRule()){
+            if (j == prod){
+                output.insert(i);
+                continue;
+            }
+        }
+    }
+    return output;
+}
+
+set<Components *> CFG::findBase(const string& input) {
+    set<Components*> output;
+    for (auto i : variables){
+        for (auto j : i->getRule()){
+            if (j.size() == 1 and j[0]->getName() == input){
+                output.insert(i);
+            }
+        }
+    }
+    return output;
+}
+
+vector<vector<Components *>> CFG::cross(const set<Components *>& A, const set<Components*>& B) {
+    vector<vector<Components*>> output;
+    for (auto i : A){
+        for (auto j : B) {
+            output.push_back({i,j});
+        }
+    }
+    return output;
+}
+
+vector<Components *> CFG::first(Components *input) {
+    for (auto item : input->getRule()){
+        if (item[0]->isTv()){
+
+        }
+        else {
+
+        }
+    }
+}
+
+vector<Components *> CFG::follow(Components *input) {
+    return vector<Components *>();
 }
 
 void CFG::toCNF() {         // converts cfg to cnf (Chompsky normal form)

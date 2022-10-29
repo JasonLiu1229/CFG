@@ -32,7 +32,9 @@ public:
     //==== Functions ====//
     void print();
 
-    bool accepts(const string& input);
+    void accepts(const string& input);
+
+    void ll();
 
     //bool epsilonExist();
 
@@ -73,6 +75,16 @@ public:
     static bool comp(vector<Components*> x, vector<Components*> y);
 
     void reset();
+
+    set<Components*> findSymbols(const vector<Components*>& prod);
+
+    set<Components*> findBase(const string& input);
+
+    vector<vector<Components*>> cross(const set<Components*>& A, const set<Components*>& B);
+
+    vector<Components*> first(Components* input);
+
+    vector<Components*> follow (Components* input);
 
     //==== Conversion ====//
     void toCNF();
